@@ -1,6 +1,5 @@
-
 from flask import Flask, request, jsonify
-
+from Backend import *
 class MyFlaskApp(Flask):
    def run(self, host=None, port=None, debug=None, **options):
        super(MyFlaskApp, self).run(host=host, port=port, debug=debug, **options)
@@ -28,7 +27,7 @@ def search():
         element is a tuple (wiki_id, title).
     '''
     res = []
-    @query = request.args.get('query', '')
+    query = request.args.get('query', '')
     if len(query) == 0:
       return jsonify(res)
     # BEGIN SOLUTION
@@ -53,14 +52,14 @@ def search_body():
         element is a tuple (wiki_id, title).
     '''
     res = []
-    #query = request.args.get('query', '')
+    query = request.args.get('query', '')
     if len(query) == 0:
       return jsonify(res)
     # BEGIN SOLUTION
-    index_vody = InvertedIndex.read_index()
+    res = backend.cosine_sim_search(query,backend.index_body,"")
 
     # END SOLUTION
-    print(res)
+
     return jsonify(res)
 
 @app.route("/search_title")
@@ -137,6 +136,10 @@ def get_pagerank():
     if len(wiki_ids) == 0:
       return jsonify(res)
     # BEGIN SOLUTION
+    try:
+        res = backend.get_score_for_doc_from_dicti(wiki_ids,backend.page_rank_dict)
+    except:
+        res = []
 
     # END SOLUTION
     return jsonify(res)
@@ -164,11 +167,16 @@ def get_pageview():
     if len(wiki_ids) == 0:
       return jsonify(res)
     # BEGIN SOLUTION
-
+    try:
+        res = backend.get_score_for_doc_from_dicti(wiki_ids,backend.page_view_dict)
+    except:
+        res = []
     # END SOLUTION
     return jsonify(res)
 
 
 if __name__ == '__main__':
+    #call the backend in the moment when the process of the search_fronted is launched
+    backend = Backend()
     # run the Flask RESTful API, make the server publicly available (host='0.0.0.0') on port 8080
     app.run(host='0.0.0.0', port=8080, debug=True)
