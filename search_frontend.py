@@ -56,10 +56,10 @@ def search_body():
     if len(query) == 0:
       return jsonify(res)
     # BEGIN SOLUTION
-    index_vody = InvertedIndex.read_index()
+    res = backend.cosine_sim_search(query,backend.index_body,"")
 
     # END SOLUTION
-    print(res)
+
     return jsonify(res)
 
 @app.route("/search_title")
@@ -136,6 +136,10 @@ def get_pagerank():
     if len(wiki_ids) == 0:
       return jsonify(res)
     # BEGIN SOLUTION
+    try:
+        res = backend.get_score_for_doc_from_dicti(wiki_ids,backend.page_rank_dict)
+    except:
+        res = []
 
     # END SOLUTION
     return jsonify(res)
@@ -163,7 +167,10 @@ def get_pageview():
     if len(wiki_ids) == 0:
       return jsonify(res)
     # BEGIN SOLUTION
-
+    try:
+        res = backend.get_score_for_doc_from_dicti(wiki_ids,backend.page_view_dict)
+    except:
+        res = []
     # END SOLUTION
     return jsonify(res)
 

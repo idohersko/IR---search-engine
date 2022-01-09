@@ -29,6 +29,7 @@ class Backend:
         bucket_name = "ass-3-bucket-tamar"
         client = storage.Client()
         blobs = client.list_blobs(bucket_name)
+        #connect to the bucket and read the relevant files.
         for blob in blobs:
             if blob.name == 'postings_gcp/index.pkl':
                 with blob.open("rb") as f:
@@ -63,7 +64,7 @@ class Backend:
     def binary_search(self, query_to_search, index, index_name):
         # counter, each key will hold a number, this number will be the amount of word that hold this doc.
         counter = Counter([])
-        # iterate over all the unique term of a quey
+        # iterate over all the unique term of a query
         for term in np.unique(query_to_search):
             try:
                 # for each query take the posting list of the term
@@ -77,35 +78,40 @@ class Backend:
         keys = dict((counter.most_common())).keys()
         return list(keys)
 
+    # This function iterate over the terms of a query and calculate the size of vector of the query and also returns 2 other parameters : the list of candidates document (which later we will give a score for them), the
     def iter_over_relevant_terms(self, query_to_search, index, index_name):
         candidates_list = set()
         candidates = {}
+        query_vec = 0
+        query_tf_counter = Counter(query_to_search)
         for term in np.unique(query_to_search):
             try:
-                normlized_tfidf = []
-                list_of_doc = self.read_posting_list(index, term, index_name)
-                for doc_id, freq in list_of_doc:
-                    candidates_list.add(doc_id)
-                    normlized_tfidf.append((doc_id, (freq / self.vec_len_dict[doc_id][0]) * math.log(
-                        self.size_vec_len_dict / index.df[term], 10)))
-                for doc_id, tfidf in normlized_tfidf:
-                    candidates[(doc_id, term)] = candidates.get((doc_id, term), 0) + tfidf
+                if term in index.df.keys():
+                    tf_term = query_tf_counter[term]/len(query_to_search)
+                    idf_term =math.log10(self.size_vec_len_dict/index.df[term])
+                    query_vec += (idf_term * tf_term) ** 2
+                    normlized_tfidf = []
+                    list_of_doc = self.read_posting_list(index, term, index_name)
+                    for doc_id, freq in list_of_doc:
+                        candidates_list.add(doc_id)
+                        normlized_tfidf.append((doc_id, (freq / self.vec_len_dict[doc_id][0]) * math.log(
+                            self.size_vec_len_dict / index.df[term], 10)))
+                    for doc_id, tfidf in normlized_tfidf:
+                        candidates[(doc_id, term)] = candidates.get((doc_id, term), 0) + tfidf
             except:
                 continue
-        return list(candidates_list), candidates
+        return list(candidates_list), candidates, math.sqrt(query_vec)
 
     def cosine_similarity(self, query_to_search, index, index_name):
         dicti = {}
-        candidates_docs_list, candidates_tfidf_dict = self.iter_over_relevant_terms(query_to_search, index, index_name)
+        candidates_docs_list, candidates_tfidf_dict, query_vec = self.iter_over_relevant_terms(query_to_search, index, index_name)
         for doc in candidates_docs_list:
             mone = 0.0
+
             for term in np.unique(query_to_search):
-                try:
+                if (doc, term) in candidates_tfidf_dict.keys():
                     mone += candidates_tfidf_dict[(doc, term)]
-                except:
-                    continue
-            mahane = float(self.vec_len_dict[doc][1]) * math.sqrt(
-                len(query_to_search))  # todo:documents tfidf_dict is taken from disk's memory
+            mahane = float(self.vec_len_dict[doc][1]) * query_vec
             dicti[doc] = mone / mahane
         return dicti
 
@@ -117,3 +123,13 @@ class Backend:
         temp = self.cosine_similarity(query_to_search, index, index_name)
         top_n = self.get_top_n_docs(temp)
         return top_n
+
+    #returns dictionnary values of a given list of docs
+    def get_score_for_doc_from_dicti(self, lists_of_documents, dicti):
+        page_views = []
+        for docID in lists_of_documents:
+            page_views.append(dicti[docID])
+        return page_views
+
+
+#todo check if numpy is good or bad for speed
