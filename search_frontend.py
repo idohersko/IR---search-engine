@@ -1,6 +1,5 @@
-
 from flask import Flask, request, jsonify
-
+from Backend import *
 class MyFlaskApp(Flask):
    def run(self, host=None, port=None, debug=None, **options):
        super(MyFlaskApp, self).run(host=host, port=port, debug=debug, **options)
@@ -28,7 +27,7 @@ def search():
         element is a tuple (wiki_id, title).
     '''
     res = []
-    @query = request.args.get('query', '')
+    query = request.args.get('query', '')
     if len(query) == 0:
       return jsonify(res)
     # BEGIN SOLUTION
@@ -53,7 +52,7 @@ def search_body():
         element is a tuple (wiki_id, title).
     '''
     res = []
-    #query = request.args.get('query', '')
+    query = request.args.get('query', '')
     if len(query) == 0:
       return jsonify(res)
     # BEGIN SOLUTION
@@ -170,5 +169,7 @@ def get_pageview():
 
 
 if __name__ == '__main__':
+    #call the backend in the moment when the process of the search_fronted is launched
+    backend = Backend()
     # run the Flask RESTful API, make the server publicly available (host='0.0.0.0') on port 8080
     app.run(host='0.0.0.0', port=8080, debug=True)

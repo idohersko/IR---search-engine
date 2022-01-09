@@ -67,11 +67,11 @@ class MultiFileReader:
     def __init__(self):
         self._open_files = {}
 
-    def read(self, locs, n_bytes):
+    def read(self, locs, n_bytes, index_name):
         b = []
         for f_name, offset in locs:
             if f_name not in self._open_files:
-                blob = BUCKET.get_blob(f'postings_gcp/{f_name}')
+                blob = BUCKET.get_blob(f'postings_gcp{index_name}/{f_name}')
                 self._open_files[f_name] = blob.open('rb')
 
                 # self._open_files[f_name] = open(f_name, 'rb')
@@ -182,7 +182,7 @@ class InvertedIndex:
             p.unlink()
 
     @staticmethod
-    def write_a_posting_list(b_w_pl, bucket_name):
+    def write_a_posting_list(b_w_pl, bucket_name, index_name):
         posting_locs = defaultdict(list)
         bucket_id, list_w_pl = b_w_pl
 
@@ -196,16 +196,16 @@ class InvertedIndex:
                 # save file locations to index
                 posting_locs[w].extend(locs)
             writer.upload_to_gcp()
-            InvertedIndex._upload_posting_locs(bucket_id, posting_locs, bucket_name)
+            InvertedIndex._upload_posting_locs(bucket_id, posting_locs, bucket_name, index_name)
         return bucket_id
 
     @staticmethod
-    def _upload_posting_locs(bucket_id, posting_locs, bucket_name):
+    def _upload_posting_locs(bucket_id, posting_locs, bucket_name, index_name):
         with open(f"{bucket_id}_posting_locs.pickle", "wb") as f:
             pickle.dump(posting_locs, f)
         client = storage.Client()
         bucket = client.bucket(bucket_name)
-        blob_posting_locs = bucket.blob(f"postings_gcp/{bucket_id}_posting_locs.pickle")
+        blob_posting_locs = bucket.blob(f"postings_gcp{index_name}/{bucket_id}_posting_locs.pickle")
         blob_posting_locs.upload_from_filename(f"{bucket_id}_posting_locs.pickle")
 
 
