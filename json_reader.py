@@ -8,7 +8,7 @@ def read_json_documents():
         for query in data:
             for doc in data[query]:
                 set_doc.add(doc)
-        print(len(set_doc))
+        print((list)(set_doc))
 
 
 read_json_documents()
