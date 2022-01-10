@@ -136,11 +136,25 @@ class Backend:
         return top_n
 
     # returns dictionnary values of a given list of docs
-    def get_score_for_doc_from_dicti(self, lists_of_documents, dicti):
-        page_views = []
+    def get_score_for_doc_from_pageview(self, lists_of_documents):
+        ans = []
         for docID in lists_of_documents:
-            page_views.append(dicti[docID])
-        return page_views
+            try:
+                item = self.page_view_dict[docID]
+            except:
+                item = 1234
+            ans.append(item)
+        return ans
+
+    def get_score_for_doc_from_pagerank(self, lists_of_documents):
+        ans = []
+        for docID in lists_of_documents:
+            try:
+                item = self.page_rank_dict[str(docID)]
+            except:
+                item = 0.001
+            ans.append(item)
+        return ans
 
     def get_title_dict(self):
         return self.id_title_dict
