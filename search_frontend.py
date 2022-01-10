@@ -191,10 +191,8 @@ def get_pageview():
     if len(wiki_ids) == 0:
         return jsonify(res)
     # BEGIN SOLUTION
-    try:
-        res = backend.get_score_for_doc_from_dicti(wiki_ids, backend.page_view_dict)
-    except:
-        res = []
+    res = backend.get_score_for_doc_from_dicti(wiki_ids, backend.page_view_dict)
+    print("1")
     # END SOLUTION
     return jsonify(res)
 
