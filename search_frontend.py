@@ -111,7 +111,7 @@ def search_anchor():
     if len(query) == 0:
       return jsonify(res)
     # BEGIN SOLUTION
-    
+    res = backend.binary_search(query.split(' '), backend.index_anchor, "_anchor")
     # END SOLUTION
     return jsonify(res)
 
