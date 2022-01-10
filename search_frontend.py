@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, request, jsonify
 from Backend import *
 class MyFlaskApp(Flask):
@@ -58,10 +60,12 @@ def search_body():
     # BEGIN SOLUTION
     doc_lst = backend.cosine_sim_search(query.split(' '),backend.index_body,"")
     for doc in doc_lst:
-        res.append((doc,backend.id_title_dict[doc]))
+        res.append((doc,backend.get_title_dict()[doc]))
+
+    js = json.dumps(str(res), indent=4)
     # END SOLUTION
 
-    return jsonify(res)
+    return jsonify(js)
 
 @app.route("/search_title")
 def search_title():
@@ -88,7 +92,7 @@ def search_title():
     doc_lst = backend.binary_search(query.split(' '), backend.index_title, "_title")
     # END SOLUTION
     for doc in doc_lst:
-        res.append((doc,backend.id_title_dict[doc]))
+        res.append((doc,backend.get_title_dict()[doc]))
     return jsonify(res)
 
 @app.route("/search_anchor")
@@ -116,7 +120,7 @@ def search_anchor():
     # BEGIN SOLUTION
     doc_lst = backend.binary_search(query.split(' '), backend.index_anchor, "_anchor")
     for doc in doc_lst:
-        res.append((doc,backend.id_title_dict[doc]))
+        res.append((doc,backend.get_title_dict()[doc]))
     # END SOLUTION
     return jsonify(res)
 

@@ -138,4 +138,7 @@ class Backend:
             page_views.append(dicti[docID])
         return page_views
 
+    def get_title_dict(self):
+        return self.id_title_dict
+
 # todo check if numpy is good or bad for speed
