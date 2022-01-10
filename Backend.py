@@ -150,7 +150,7 @@ class Backend:
         ans = []
         for docID in lists_of_documents:
             try:
-                item = self.page_rank_dict[str(docID)]
+                item = float(self.page_rank_dict[str(docID)])
             except:
                 item = 0.001
             ans.append(item)
