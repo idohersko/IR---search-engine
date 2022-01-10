@@ -6,7 +6,6 @@ from collections import Counter, OrderedDict, defaultdict
 from contextlib import closing
 from google.cloud import storage
 from inverted_index_gcp import *
-from nltk.corpus import stopwords
 
 class Backend:
     size_vec_len_dict = 0
@@ -23,9 +22,7 @@ class Backend:
     id_title_dict = None
     bucket_name = "316048628"
 
-    #stopwords and other preprocess of the query
-    english_stopwords = frozenset(stopwords.words('english'))
-    corpus_stopwords = ['category', 'references', 'also', 'links', 'extenal', 'see', 'thumb']
+    #preprocess of the query
     RE_WORD = re.compile(r"""[\#\@\w](['\-]?\w){2,24}""", re.UNICODE)
 
     # more parameters
