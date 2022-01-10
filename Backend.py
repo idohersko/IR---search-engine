@@ -1,10 +1,12 @@
 import math
+import re
+
 import numpy as np
 from collections import Counter, OrderedDict, defaultdict
 from contextlib import closing
 from google.cloud import storage
 from inverted_index_gcp import *
-
+from nltk.corpus import stopwords
 
 class Backend:
     size_vec_len_dict = 0
@@ -20,6 +22,11 @@ class Backend:
     # dictionnary of docID and title -- {Key : docID, Value : Title}
     id_title_dict = None
     bucket_name = "316048628"
+
+    #stopwords and other preprocess of the query
+    english_stopwords = frozenset(stopwords.words('english'))
+    corpus_stopwords = ['category', 'references', 'also', 'links', 'extenal', 'see', 'thumb']
+    RE_WORD = re.compile(r"""[\#\@\w](['\-]?\w){2,24}""", re.UNICODE)
 
     # more parameters
     TUPLE_SIZE = 6
@@ -141,4 +148,17 @@ class Backend:
     def get_title_dict(self):
         return self.id_title_dict
 
+    def preprocess_query(self, query_as_string, index):
+        tokens = [token.group() for token in self.RE_WORD.finditer(query_as_string.lower())]
+        tokens_after_filter = [term for term in tokens if term in index.df]
+        return tokens_after_filter
+
+    def get_index_body(self):
+        return self.index_body
+
+    def get_index_title(self):
+        return self.index_title
+
+    def get_index_anchor(self):
+        return self.index_anchor
 # todo check if numpy is good or bad for speed

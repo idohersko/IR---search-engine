@@ -2,9 +2,12 @@ import json
 
 from flask import Flask, request, jsonify
 from Backend import *
+
+
 class MyFlaskApp(Flask):
-   def run(self, host=None, port=None, debug=None, **options):
-       super(MyFlaskApp, self).run(host=host, port=port, debug=debug, **options)
+    def run(self, host=None, port=None, debug=None, **options):
+        super(MyFlaskApp, self).run(host=host, port=port, debug=debug, **options)
+
 
 app = MyFlaskApp(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
@@ -31,11 +34,12 @@ def search():
     res = []
     query = request.args.get('query', '')
     if len(query) == 0:
-      return jsonify(res)
+        return jsonify(res)
     # BEGIN SOLUTION
 
     # END SOLUTION
     return jsonify(res)
+
 
 @app.route("/search_body")
 def search_body():
@@ -54,18 +58,22 @@ def search_body():
         element is a tuple (wiki_id, title).
     '''
     res = []
+
     query = request.args.get('query', '')
     if len(query) == 0:
-      return jsonify(res)
+        return jsonify(res)
     # BEGIN SOLUTION
-    doc_lst = backend.cosine_sim_search(query.split(' '),backend.index_body,"")
-    for doc in doc_lst:
-        res.append((doc,backend.get_title_dict()[doc]))
 
+    # preprocess the query and get a list of "clean" terms
+    query_lst = backend.preprocess_query(query, backend.get_index_body())
+    doc_lst = backend.cosine_sim_search(query_lst , backend.index_body, "")
+    for doc in doc_lst:
+        res.append((doc, backend.get_title_dict()[doc]))
 
     # END SOLUTION
 
     return jsonify(res)
+
 
 @app.route("/search_title")
 def search_title():
@@ -87,13 +95,16 @@ def search_title():
     res = []
     query = request.args.get('query', '')
     if len(query) == 0:
-      return jsonify(res)
+        return jsonify(res)
     # BEGIN SOLUTION
-    doc_lst = backend.binary_search(query.split(' '), backend.index_title, "_title")
+    # preprocess the query and get a list of "clean" terms
+    query_lst = backend.preprocess_query(query, backend.get_index_title())
+    doc_lst = backend.binary_search(query_lst, backend.index_title, "_title")
     # END SOLUTION
     for doc in doc_lst:
-        res.append((doc,backend.get_title_dict()[doc]))
+        res.append((doc, backend.get_title_dict()[doc]))
     return jsonify(res)
+
 
 @app.route("/search_anchor")
 def search_anchor():
@@ -116,13 +127,16 @@ def search_anchor():
     res = []
     query = request.args.get('query', '')
     if len(query) == 0:
-      return jsonify(res)
+        return jsonify(res)
     # BEGIN SOLUTION
-    doc_lst = backend.binary_search(query.split(' '), backend.index_anchor, "_anchor")
+    # preprocess the query and get a list of "clean" terms
+    query_lst = backend.preprocess_query(query, backend.get_index_title())
+    doc_lst = backend.binary_search(query_lst, backend.index_anchor, "_anchor")
     for doc in doc_lst:
-        res.append((doc,backend.get_title_dict()[doc]))
+        res.append((doc, backend.get_title_dict()[doc]))
     # END SOLUTION
     return jsonify(res)
+
 
 @app.route("/get_pagerank", methods=['POST'])
 def get_pagerank():
@@ -143,15 +157,16 @@ def get_pagerank():
     res = []
     wiki_ids = request.get_json()
     if len(wiki_ids) == 0:
-      return jsonify(res)
+        return jsonify(res)
     # BEGIN SOLUTION
     try:
-        res = backend.get_score_for_doc_from_dicti(wiki_ids,backend.page_rank_dict)
+        res = backend.get_score_for_doc_from_dicti(wiki_ids, backend.page_rank_dict)
     except:
         res = []
 
     # END SOLUTION
     return jsonify(res)
+
 
 @app.route("/get_pageview", methods=['POST'])
 def get_pageview():
@@ -174,10 +189,10 @@ def get_pageview():
     res = []
     wiki_ids = request.get_json()
     if len(wiki_ids) == 0:
-      return jsonify(res)
+        return jsonify(res)
     # BEGIN SOLUTION
     try:
-        res = backend.get_score_for_doc_from_dicti(wiki_ids,backend.page_view_dict)
+        res = backend.get_score_for_doc_from_dicti(wiki_ids, backend.page_view_dict)
     except:
         res = []
     # END SOLUTION
@@ -185,7 +200,7 @@ def get_pageview():
 
 
 if __name__ == '__main__':
-    #call the backend in the moment when the process of the search_fronted is launched
+    # call the backend in the moment when the process of the search_fronted is launched
     backend = Backend()
     # run the Flask RESTful API, make the server publicly available (host='0.0.0.0') on port 8080
     app.run(host='0.0.0.0', port=8080, debug=True)
