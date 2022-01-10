@@ -62,10 +62,10 @@ def search_body():
     for doc in doc_lst:
         res.append((doc,backend.get_title_dict()[doc]))
 
-    js = json.dumps(str(res), indent=4)
+
     # END SOLUTION
 
-    return jsonify(js)
+    return jsonify(res)
 
 @app.route("/search_title")
 def search_title():
