@@ -56,8 +56,9 @@ def search_body():
     if len(query) == 0:
       return jsonify(res)
     # BEGIN SOLUTION
-    res = backend.cosine_sim_search(query.split(' '),backend.index_body,"")
-
+    doc_lst = backend.cosine_sim_search(query.split(' '),backend.index_body,"")
+    for doc in doc_lst:
+        res.append((doc,backend.id_title_dict[doc]))
     # END SOLUTION
 
     return jsonify(res)
@@ -84,8 +85,10 @@ def search_title():
     if len(query) == 0:
       return jsonify(res)
     # BEGIN SOLUTION
-    res = backend.binary_search(query.split(' '), backend.index_title, "_title")
+    doc_lst = backend.binary_search(query.split(' '), backend.index_title, "_title")
     # END SOLUTION
+    for doc in doc_lst:
+        res.append((doc,backend.id_title_dict[doc]))
     return jsonify(res)
 
 @app.route("/search_anchor")
@@ -111,7 +114,9 @@ def search_anchor():
     if len(query) == 0:
       return jsonify(res)
     # BEGIN SOLUTION
-    res = backend.binary_search(query.split(' '), backend.index_anchor, "_anchor")
+    doc_lst = backend.binary_search(query.split(' '), backend.index_anchor, "_anchor")
+    for doc in doc_lst:
+        res.append((doc,backend.id_title_dict[doc]))
     # END SOLUTION
     return jsonify(res)
 

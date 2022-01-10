@@ -1,11 +1,8 @@
 import math
-
 import numpy as np
 from collections import Counter, OrderedDict, defaultdict
 from contextlib import closing
-
 from google.cloud import storage
-
 from inverted_index_gcp import *
 
 
@@ -27,10 +24,11 @@ class Backend:
     # more parameters
     TUPLE_SIZE = 6
     TF_MASK = 2 ** 16 - 1  # Masking the 16 low bits of an integer
+
     def __init__(self):
         client = storage.Client()
         blobs = client.list_blobs(self.bucket_name)
-        #connect to the bucket and read the relevant files.
+        # connect to the bucket and read the relevant files.
         for blob in blobs:
             if blob.name == 'postings_gcp/index.pkl':
                 with blob.open("rb") as f:
@@ -54,8 +52,7 @@ class Backend:
                 with blob.open("rb") as f:
                     self.id_title_dict = pickle.load(f)
 
-
-        #compute the size of the vec_len_dict
+        # compute the size of the vec_len_dict
         self.size_vec_len_dict = len(self.vec_len_dict)
 
     def read_posting_list(self, inverted, w, index_name):
@@ -96,8 +93,8 @@ class Backend:
         for term in np.unique(query_to_search):
             try:
                 if term in index.df.keys():
-                    tf_term = query_tf_counter[term]/len(query_to_search)
-                    idf_term =math.log10(self.size_vec_len_dict/index.df[term])
+                    tf_term = query_tf_counter[term] / len(query_to_search)
+                    idf_term = math.log10(self.size_vec_len_dict / index.df[term])
                     query_vec += (idf_term * tf_term) ** 2
                     normlized_tfidf = []
                     list_of_doc = self.read_posting_list(index, term, index_name)
@@ -113,7 +110,8 @@ class Backend:
 
     def cosine_similarity(self, query_to_search, index, index_name):
         dicti = {}
-        candidates_docs_list, candidates_tfidf_dict, query_vec = self.iter_over_relevant_terms(query_to_search, index, index_name)
+        candidates_docs_list, candidates_tfidf_dict, query_vec = self.iter_over_relevant_terms(query_to_search, index,
+                                                                                               index_name)
         for doc in candidates_docs_list:
             mone = 0.0
 
@@ -133,12 +131,11 @@ class Backend:
         top_n = self.get_top_n_docs(temp)
         return top_n
 
-    #returns dictionnary values of a given list of docs
+    # returns dictionnary values of a given list of docs
     def get_score_for_doc_from_dicti(self, lists_of_documents, dicti):
         page_views = []
         for docID in lists_of_documents:
             page_views.append(dicti[docID])
         return page_views
 
-
-#todo check if numpy is good or bad for speed
+# todo check if numpy is good or bad for speed
