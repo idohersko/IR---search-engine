@@ -1,11 +1,8 @@
 import math
-
 import numpy as np
 from collections import Counter, OrderedDict, defaultdict
 from contextlib import closing
-
 from google.cloud import storage
-
 from inverted_index import *
 
 
@@ -16,19 +13,20 @@ class Backend:
     index_anchor = None
     # dictionnary of {Key : docID, Value : (tfidf vector size, doc. len)}
     vec_len_dict = None
-    # dictionnary of PageView of {Key : docID, Value : Page view score}
+    # dictionnary of PageView -- {Key : docID, Value : Page view score}
     page_view_dict = None
-    # dictionnary of PageView of {Key : docID, Value : Page rank score}
+    # dictionnary of PageRank -- {Key : docID, Value : Page rank score}
     page_rank_dict = None
+    # dictionnary of docID and title -- {Key : docID, Value : Title}
+    id_title_dict = None
+    bucket_name = "ass-3-bucket-tamar"
 
     # more parameters
     TUPLE_SIZE = 6
     TF_MASK = 2 ** 16 - 1  # Masking the 16 low bits of an integer
-
     def __init__(self):
-        bucket_name = "ass-3-bucket-tamar"
         client = storage.Client()
-        blobs = client.list_blobs(bucket_name)
+        blobs = client.list_blobs(self.bucket_name)
         #connect to the bucket and read the relevant files.
         for blob in blobs:
             if blob.name == 'postings_gcp/index.pkl':
@@ -46,6 +44,10 @@ class Backend:
             elif blob.name == 'pagerank_dict.pkl':
                 with blob.open("rb") as f:
                     self.page_rank_dict = pickle.load(f)
+            elif blob.name == 'id_title_dict.pkl':
+                with blob.open("rb") as f:
+                    self.id_title_dict = pickle.load(f)
+
 
         self.size_vec_len_dict = len(self.vec_len_dict)
 
@@ -94,8 +96,7 @@ class Backend:
                     list_of_doc = self.read_posting_list(index, term, index_name)
                     for doc_id, freq in list_of_doc:
                         candidates_list.add(doc_id)
-                        normlized_tfidf.append((doc_id, (freq / self.vec_len_dict[doc_id][0]) * math.log(
-                            self.size_vec_len_dict / index.df[term], 10)))
+                        normlized_tfidf.append((doc_id, (freq / self.vec_len_dict[doc_id][0]) * math.log(self.size_vec_len_dict / index.df[term], 10)))
                     for doc_id, tfidf in normlized_tfidf:
                         candidates[(doc_id, term)] = candidates.get((doc_id, term), 0) + tfidf
             except:
