@@ -1,9 +1,12 @@
 import math
+
 import numpy as np
 from collections import Counter, OrderedDict, defaultdict
 from contextlib import closing
+
 from google.cloud import storage
-from inverted_index import *
+
+from inverted_index_gcp import *
 
 
 class Backend:
@@ -44,11 +47,15 @@ class Backend:
             elif blob.name == 'pagerank_dict.pkl':
                 with blob.open("rb") as f:
                     self.page_rank_dict = pickle.load(f)
+            elif blob.name == 'dl_dict.pkl':
+                with blob.open("rb") as f:
+                    self.vec_len_dict = pickle.load(f)
             elif blob.name == 'id_title_dict.pkl':
                 with blob.open("rb") as f:
                     self.id_title_dict = pickle.load(f)
 
 
+        #compute the size of the vec_len_dict
         self.size_vec_len_dict = len(self.vec_len_dict)
 
     def read_posting_list(self, inverted, w, index_name):
@@ -96,7 +103,8 @@ class Backend:
                     list_of_doc = self.read_posting_list(index, term, index_name)
                     for doc_id, freq in list_of_doc:
                         candidates_list.add(doc_id)
-                        normlized_tfidf.append((doc_id, (freq / self.vec_len_dict[doc_id][0]) * math.log(self.size_vec_len_dict / index.df[term], 10)))
+                        normlized_tfidf.append((doc_id, (freq / self.vec_len_dict[doc_id][0]) * math.log(
+                            self.size_vec_len_dict / index.df[term], 10)))
                     for doc_id, tfidf in normlized_tfidf:
                         candidates[(doc_id, term)] = candidates.get((doc_id, term), 0) + tfidf
             except:
