@@ -22,7 +22,7 @@ class Backend:
     page_rank_dict = None
     # dictionnary of docID and title -- {Key : docID, Value : Title}
     id_title_dict = None
-    bucket_name = "ass-3-bucket-tamar"
+    bucket_name = "316048628"
 
     # more parameters
     TUPLE_SIZE = 6
