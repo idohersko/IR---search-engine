@@ -6,6 +6,7 @@ from collections import Counter, OrderedDict, defaultdict
 from contextlib import closing
 from google.cloud import storage
 from inverted_index_gcp import *
+from BM25_from_index import *
 
 class Backend:
     size_vec_len_dict = 0
@@ -21,7 +22,8 @@ class Backend:
     # dictionnary of docID and title -- {Key : docID, Value : Title}
     id_title_dict = None
     bucket_name = "316048628"
-
+    bm25_body = None
+    bm25_title = None
     #preprocess of the query
     RE_WORD = re.compile(r"""[\#\@\w](['\-]?\w){2,24}""", re.UNICODE)
 
@@ -56,8 +58,17 @@ class Backend:
                 with blob.open("rb") as f:
                     self.id_title_dict = pickle.load(f)
 
+            elif blob.name == 'body_len_dict.pkl':
+                with blob.open("rb") as f:
+                    self.body_len_dict = pickle.load(f)
+            elif blob.name == 'title_len_dict.pkl':
+                with blob.open("rb") as f:
+                    self.title_len_dict = pickle.load(f)
+
         # compute the size of the vec_len_dict
         self.size_vec_len_dict = len(self.vec_len_dict)
+        self.bm25_body = BM25_from_index(self.index_body, self.body_len_dict, "")
+        self.bm25_title = BM25_from_index(self.index_title, self.title_len_dict, "_title")
 
     def read_posting_list(self, inverted, w, index_name):
         with closing(MultiFileReader()) as reader:
@@ -171,10 +182,34 @@ class Backend:
     def get_title_dict(self):
         return self.id_title_dict
 
-    def preprocess_query(self, query_as_string, index):
+    def preprocess_query(self, query_as_string,index):
         tokens = [token.group() for token in self.RE_WORD.finditer(query_as_string.lower())]
         tokens_after_filter = [term for term in tokens if term in index.df]
+
         return tokens_after_filter
+
+
+    def merge_results(self,title_scores, body_scores, title_weight=0.5, text_weight=0.5, N=100):
+
+        merge_score = {}
+        for body_tup in body_scores:
+            merge_score[body_tup[0]] = text_weight * body_tup[1]
+        for title_tup in title_scores:
+            if title_tup[0] in merge_score:
+                merge_score[title_tup[0]] = merge_score[title_tup[0]] + title_weight * title_tup[1]
+            else:
+                merge_score[title_tup[0]] = title_weight * title_tup[1]
+
+        merge_score_lst = list(merge_score.items())
+        l = sorted(merge_score_lst, key=lambda x: -x[1])[:N]
+        res = [x[0] for x in l]
+        return res
+
+    def bm25_search(self ,query_to_search):
+        score_body = self.bm25_body.search(query_to_search)
+        score_title = self.bm25_title.search(query_to_search)
+        merge_lst = self.merge_results(score_title, score_body, title_weight=0.7, text_weight=0.3, N=100)
+        return merge_lst
 
     def get_index_body(self):
         return self.index_body
