@@ -38,8 +38,8 @@ def search():
     # BEGIN SOLUTION
     query_lst = backend.preprocess_query(query, backend.get_index_body())
     doc_lst, scores = backend.cosine_sim_search(query_lst, backend.index_body, "")
-    scores_cosine = [(i, v * 0.8) for i, v in scores]
-    scores_cosine_pagerank_pageview = [(i, v + backend.get_page_rank_dict_value(i) * 0.1 + backend.get_page_view_dict_value(i) * 0.1) for i, v in scores_cosine]
+    scores_cosine = [(i, v * 0.5) for i, v in scores]
+    scores_cosine_pagerank_pageview = [(i, v + backend.get_page_rank_dict_value(i) * 0.25 + backend.get_page_view_dict_value(i) * 0.25) for i, v in scores_cosine]
     scores_cosine_pagerank_pageview_sorted = list(dict(Counter(dict(scores_cosine_pagerank_pageview)).most_common()).keys())
 
     for doc in scores_cosine_pagerank_pageview_sorted:
