@@ -128,12 +128,12 @@ class Backend:
 
     def get_top_n_docs(self, dicti, n=100):
         lst = sorted([(doc_id, score) for doc_id, score in dicti.items()], key=lambda x: x[1], reverse=True)[:n]
-        return ([doc_id for doc_id, score in lst])
+        return ([doc_id for doc_id, score in lst]), lst
 
     def cosine_sim_search(self, query_to_search, index, index_name):
         temp = self.cosine_similarity(query_to_search, index, index_name)
-        top_n = self.get_top_n_docs(temp)
-        return top_n
+        top_n, list_scores = self.get_top_n_docs(temp)
+        return top_n, list_scores
 
     # returns dictionnary values of a given list of docs
     def get_score_for_doc_from_pageview(self, lists_of_documents):
@@ -142,9 +142,21 @@ class Backend:
             try:
                 item = self.page_view_dict[docID]
             except:
-                item = 1234
+                item = 123456
             ans.append(item)
         return ans
+
+    def get_page_rank_dict_value(self, key):
+        try:
+            return self.page_rank_dict[key]
+        except:
+            return 0.005
+
+    def get_page_view_dict_value(self, key):
+        try:
+            return self.page_view_dict[key]
+        except:
+            return 1234
 
     def get_score_for_doc_from_pagerank(self, lists_of_documents):
         ans = []
@@ -152,7 +164,7 @@ class Backend:
             try:
                 item = float(self.page_rank_dict[str(docID)])
             except:
-                item = 0.001
+                item = 0.005
             ans.append(item)
         return ans
 
@@ -172,4 +184,4 @@ class Backend:
 
     def get_index_anchor(self):
         return self.index_anchor
-# todo check if numpy is good or bad for speed
+

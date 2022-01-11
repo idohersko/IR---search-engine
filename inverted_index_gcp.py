@@ -73,7 +73,6 @@ class MultiFileReader:
             if f_name not in self._open_files:
                 blob = BUCKET.get_blob(f'postings_gcp{index_name}/{f_name}')
                 self._open_files[f_name] = blob.open('rb')
-
                 # self._open_files[f_name] = open(f_name, 'rb')
             f = self._open_files[f_name]
             f.seek(offset)
