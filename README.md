@@ -5,9 +5,23 @@
 
 This project implements a search engine for the entire Wikipedia corpus, developed as part of a Data Retrieval course. The search engine processes queries and retrieves relevant documents using a combination of ranking algorithms.
 
+## Table of Contents
+- [Project Overview](#project-overview)
+  - [Main Components](#main-components)
+  - [Preprocessing](#preprocessing)
+- [Method Overview](#method-overview)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Querying the Search Engine](#querying-the-search-engine)
+  - [Ranking Methods](#ranking-methods)
+  - [BM25 Algorithm](#bm25-algorithm)
+
+
+
 ## Project Overview
 
 The search engine is designed to handle queries through a web interface, leveraging various data structures and algorithms to retrieve and rank documents from the Wikipedia corpus.
+
 
 ### Main Components
 
