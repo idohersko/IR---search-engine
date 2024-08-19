@@ -1,5 +1,8 @@
 # Wikipedia Search Engine
 
+![image](https://github.com/user-attachments/assets/d5b40adb-ba84-4472-8809-7d5c3a5a169f)
+
+
 This project implements a search engine for the entire Wikipedia corpus, developed as part of a Data Retrieval course. The search engine processes queries and retrieves relevant documents using a combination of ranking algorithms.
 
 ## Project Overview
