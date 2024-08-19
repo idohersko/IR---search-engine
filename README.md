@@ -28,7 +28,7 @@ The search engine is designed to handle queries through a web interface, leverag
 - **Backend.py**: Contains the `Backend` class, which initializes all preprocessing files and implements the core functions required to retrieve relevant documents.
 - **search_frontend.py**: The main script that runs the search engine, providing various search functions. The primary search function merges three ranking methods: cosine similarity on the body, PageRank, and PageView.
 - **BM25_from_index.py**: Implements the functions necessary for calculating the BM25 algorithm, a probabilistic information retrieval model.
-- **inverted_index_gcp.py**: Provides a class for creating and reading the inverted indexes used by the search engine.
+- **inverted_index_gcp.py**: Provides a class for creating and reading the inverted indexes used by the search engine. 
 
 ### Preprocessing
 
